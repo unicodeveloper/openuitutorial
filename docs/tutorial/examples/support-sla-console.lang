@@ -1,0 +1,25 @@
+root = Col([heading, notice, policies, filters, summary, ticketTable, detail], 5)
+$priority = "All"
+$overdueOnly = false
+$slaP1 = 4
+$slaP2 = 12
+$slaP3 = 24
+$selectedTicket = "T101"
+heading = Title("SUPPORT SLA CONSOLE", "xl")
+notice = Text("All six tickets are **fictional**. SLA policies are **prompt-supplied and illustrative**, not real customer support commitments. Changes and selections stay local.")
+policies = Card([Title("Illustrative SLA policies", "md"), policyInputs, Text("Overdue means age ≥ the effective SLA threshold, including exact equality. Thresholds are in hours; negative values are treated as 0 and empty fields use the initial threshold.", "sm", "muted")], "outline", 4, 3)
+policyInputs = Grid([Input($slaP1, "P1 SLA · hours", "number"), Input($slaP2, "P2 SLA · hours", "number"), Input($slaP3, "P3 SLA · hours", "number")], 3, 180, 4)
+p1Hours = @Max([0, @Default($slaP1, 4)])
+p2Hours = @Max([0, @Default($slaP2, 12)])
+p3Hours = @Max([0, @Default($slaP3, 24)])
+filters = Row([Select($priority, ["All", "P1", "P2", "P3"], "Priority"), Checkbox($overdueOnly, "Overdue only")], 5, "center", "start", true)
+summary = Card([Title("Overdue summary", "md"), Row([Badge(@Count(overdueTickets) + " of " + @Count(ticketRows) + " overdue overall", "warning"), Badge(@Count(visibleTickets) + " tickets shown", "info"), Badge(@Count(visibleOverdue) + " overdue in view", @Count(visibleOverdue) > 0 ? "warning" : "success")], 3, "center", "start", true)], "soft", 4, 3)
+ticketTable = Col([Title("Fictional tickets", "md"), Table(["Ticket", "Title", "Priority", "Age · h", "Illustrative SLA · h", "Status", "Inspect"], @Each(visibleTickets, "t", [t.id, t.title, t.priority, t.age, t.sla, Badge(t.overdue ? "Overdue" : "Within SLA", t.overdue ? "danger" : "success"), Button($selectedTicket == t.id ? "Selected" : "Inspect", @Set($selectedTicket, t.id), $selectedTicket == t.id ? "soft" : "outline", null, "sm")])), @Count(visibleTickets) == 0 ? Text("No fictional tickets match these filters.", "sm", "muted") : Caption("Choose Inspect to view a ticket. Selection stays available even if filters hide that ticket.")], 3)
+detail = Card([Row([Title("Selected fictional ticket · " + selected.id, "md"), Badge(selected.overdue ? "Overdue" : "Within SLA", selected.overdue ? "danger" : "success")], 3, "center", "between", true), Title(selected.title, "lg"), Table(["Property", "Value"], [["Priority", selected.priority], ["Age", @Format(selected.age) + " hours"], ["Illustrative SLA", @Format(selected.sla) + " hours"], ["Rule", @Format(selected.age) + " ≥ " + @Format(selected.sla) + " → " + (selected.overdue ? "overdue" : "not overdue")], [selected.overdue ? "At or beyond SLA by" : "Time until SLA threshold", @Format(@Abs(selected.age - selected.sla)) + " hours"]]), Caption("Illustrative inspection only. No sending, closing, or external actions.")], "outline", 4, 3)
+ticketRows = @Each(tickets, "t", {id: t.id, title: t.title, priority: t.priority, age: t.age, sla: t.priority == "P1" ? p1Hours : t.priority == "P2" ? p2Hours : p3Hours, overdue: t.age >= (t.priority == "P1" ? p1Hours : t.priority == "P2" ? p2Hours : p3Hours)})
+overdueTickets = @Filter(ticketRows, "overdue", "==", true)
+priorityTickets = $priority == "All" ? ticketRows : @Filter(ticketRows, "priority", "==", $priority)
+visibleTickets = $overdueOnly ? @Filter(priorityTickets, "overdue", "==", true) : priorityTickets
+visibleOverdue = @Filter(visibleTickets, "overdue", "==", true)
+selected = @Find(ticketRows, "id", $selectedTicket)
+tickets = [{id: "T101", priority: "P1", age: 6, title: "Sign-in outage"}, {id: "T102", priority: "P2", age: 11, title: "Invoice mismatch"}, {id: "T103", priority: "P3", age: 3, title: "Export question"}, {id: "T104", priority: "P1", age: 2, title: "Webhook delay"}, {id: "T105", priority: "P2", age: 15, title: "API timeout"}, {id: "T106", priority: "P3", age: 20, title: "Documentation feedback"}]

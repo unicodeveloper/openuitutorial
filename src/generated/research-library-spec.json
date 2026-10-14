@@ -1,0 +1,174 @@
+{
+  "root": "Col",
+  "components": {
+    "Col": {
+      "signature": "Col(children: Node[], gap?: number, align?: \"start\" | \"center\" | \"end\" | \"stretch\")",
+      "description": "Vertical layout. Without gap it spaces blocks like an article."
+    },
+    "ResearchComparison": {
+      "signature": "ResearchComparison(snapshotId: string, options: {id: \"c1\" | \"c2\" | \"c3\", label: string, claims: {criterion: string, statement: string, sourceIds: \"s1\" | \"s2\" | \"s3\"[], evidenceStatus: \"supported\" | \"uncertain\"}[]}[], selectedIds: $binding<string[]>, title?: string)",
+      "description": "Compare up to three evidence-backed options from one existing server snapshot. Reads evidence once; shortlist and excerpt controls are local. Never searches. Use a reactive $selectedIds array. Claims distinguish supported and uncertain evidence; unmatched source IDs appear unsupported. No URLs or actions in props."
+    }
+  },
+  "componentGroups": [
+    {
+      "name": "Evidence comparison",
+      "components": [
+        "Col",
+        "ResearchComparison"
+      ],
+      "notes": [
+        "Use Col([comparison]) as the root. ResearchComparison arguments are snapshotId, options, $selectedIds, optional title, in that order.",
+        "Use only canonical source IDs from the supplied snapshot. Describe unknown facts as uncertain; unmatched source IDs render as unsupported. Never supply URLs, tools, actions, or invented candidates."
+      ]
+    }
+  ],
+  "schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "Col": {
+        "$ref": "#/$defs/Col"
+      },
+      "ResearchComparison": {
+        "$ref": "#/$defs/ResearchComparison"
+      }
+    },
+    "required": [
+      "Col",
+      "ResearchComparison"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "Col": {
+        "type": "object",
+        "properties": {
+          "children": {
+            "type": "array",
+            "items": {}
+          },
+          "gap": {
+            "type": "number"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center",
+              "end",
+              "stretch"
+            ]
+          }
+        },
+        "required": [
+          "children"
+        ],
+        "additionalProperties": false,
+        "description": "Vertical layout. Without gap it spaces blocks like an article."
+      },
+      "ResearchComparison": {
+        "type": "object",
+        "properties": {
+          "snapshotId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$"
+          },
+          "options": {
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "enum": [
+                    "c1",
+                    "c2",
+                    "c3"
+                  ]
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "claims": {
+                  "minItems": 1,
+                  "maxItems": 3,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "criterion": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "statement": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 300
+                      },
+                      "sourceIds": {
+                        "minItems": 1,
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "s1",
+                            "s2",
+                            "s3"
+                          ]
+                        }
+                      },
+                      "evidenceStatus": {
+                        "type": "string",
+                        "enum": [
+                          "supported",
+                          "uncertain"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "criterion",
+                      "statement",
+                      "sourceIds",
+                      "evidenceStatus"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "label",
+                "claims"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "selectedIds": {
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "snapshotId",
+          "options",
+          "selectedIds"
+        ],
+        "additionalProperties": false,
+        "description": "Compare up to three evidence-backed options from one existing server snapshot. Reads evidence once; shortlist and excerpt controls are local. Never searches. Use a reactive $selectedIds array. Claims distinguish supported and uncertain evidence; unmatched source IDs appear unsupported. No URLs or actions in props."
+      }
+    }
+  }
+}
